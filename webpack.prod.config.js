@@ -8,6 +8,5 @@ module.exports = merge(base, {
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
   },
 });

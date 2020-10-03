@@ -1,17 +1,42 @@
 {
   "name": "ptt-nba-live",
   "version": "1.0.0",
-  "description": "",
+  "description": "An live chat overlay for PTT NBA Live post",
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack-dev-server --config webpack.dev.config.js",
+    "build": "NODE_ENV=production webpack --config webpack.prod.config.js",
+    "dist": "NODE_ENV=production electron-builder build --mac --win --linux",
     "start": "NODE_ENV=production electron ."
+  },
+  "build": {
+    "appId": "harry830622.ptt-nba-live",
+    "productName": "PTT NBA Live",
+    "files": [
+      "node_modules/**/*",
+      "dist/**/*",
+      "index.js",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "zip"
+    }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/harry830622/ptt-nba-live.git"
   },
-  "author": "",
+  "author": "Harry Chang",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/harry830622/ptt-nba-live/issues"
@@ -25,6 +50,7 @@
     "@emotion/babel-preset-css-prop": "^10.0.27",
     "@emotion/core": "^10.0.35",
     "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.2",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
@@ -32,6 +58,7 @@
     "core-js": "^3.6.5",
     "css-loader": "^4.3.0",
     "electron": "^10.1.2",
+    "electron-builder": "^22.8.1",
     "eslint": "7.2.0",
     "eslint-config-airbnb": "18.2.0",
     "eslint-config-prettier": "^6.11.0",
@@ -56,6 +83,8 @@
     "webpack-merge": "^5.1.4"
   },
   "dependencies": {
+    "axios": "^0.20.0",
+    "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
     "iconv-lite": "^0.6.2",
     "ws": "^7.3.1"

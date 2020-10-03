@@ -1,99 +1,107 @@
+const path = require('path');
 const { app, BrowserWindow } = require('electron');
-const WebSocket = require('ws');
-const iconv = require('iconv-lite');
 
-app.whenReady().then(() => {
+const { NODE_ENV } = process.env;
+
+const pttBaseUrl = 'https://www.ptt.cc';
+
+const delay = async (ms) => {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+(async () => {
+  await app.whenReady();
+
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 500,
+    height: 250,
+    transparent: true,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
     },
   });
 
-  win.loadURL('http://localhost:8080');
+  if (NODE_ENV === 'development') {
+    win.loadURL('http://localhost:8080');
+  } else {
+    win.loadFile(path.resolve(__dirname, './dist/index.html'));
+  }
 
+  win.setAutoHideMenuBar(true);
   win.setAlwaysOnTop(true);
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  const ws = new WebSocket('wss://ws.ptt.cc/bbs', {
-    origin: 'https://term.ptt.cc',
+  const pttWin = new BrowserWindow({
+    width: 400,
+    height: 600,
+    show: false,
   });
-  // ws.on('open', () => {
-  //   setTimeout(() => {
-  //     const chars = 'harry830622\rh23814540\r';
-  //     let idx = 0;
-  //     const intervalId = setInterval(() => {
-  //       if (idx >= chars.length) {
-  //         clearInterval(intervalId);
-  //         return;
-  //       }
-  //       const c = chars[idx];
-  //       console.log(c);
-  //       const b = iconv.encode(c, 'big5');
-  //       ws.send(b);
-  //       idx += 1;
-  //     }, 100);
-  //   }, 3000);
-  // });
-  ws.on('message', (msg) => {
-    const str = iconv.decode(msg, 'big5');
-    console.log(str);
-    if (str.includes('請輸入代號')) {
-      const chars = 'harry830622\rh23814540\r';
-      let idx = 0;
-      const intervalId = setInterval(() => {
-        if (idx >= chars.length) {
-          clearInterval(intervalId);
-          return;
-        }
-        ws.send(iconv.encode(chars[idx], 'big5'));
-        idx += 1;
-      }, 100);
-    } else if (str.includes('您想刪除其他重複登入的連線嗎？')) {
-      const chars = 'Y\r';
-      let idx = 0;
-      const intervalId = setInterval(() => {
-        if (idx >= chars.length) {
-          clearInterval(intervalId);
-          return;
-        }
-        ws.send(iconv.encode(chars[idx], 'big5'));
-        idx += 1;
-      }, 100);
-    } else if (str.includes('請按任意鍵繼續')) {
-      const chars = '\r';
-      let idx = 0;
-      const intervalId = setInterval(() => {
-        if (idx >= chars.length) {
-          clearInterval(intervalId);
-          return;
-        }
-        ws.send(iconv.encode(chars[idx], 'big5'));
-        idx += 1;
-      }, 100);
-    } else if (str.includes('主功能表')) {
-      const chars = 'sNBA\r';
-      let idx = 0;
-      const intervalId = setInterval(() => {
-        if (idx >= chars.length) {
-          clearInterval(intervalId);
-          return;
-        }
-        ws.send(iconv.encode(chars[idx], 'big5'));
-        idx += 1;
-      }, 100);
-    } else if (str.includes('看板《NBA》')) {
-      const chars = '/Live\r';
-      let idx = 0;
-      const intervalId = setInterval(() => {
-        if (idx >= chars.length) {
-          clearInterval(intervalId);
-          return;
-        }
-        ws.send(iconv.encode(chars[idx], 'big5'));
-        idx += 1;
-      }, 100);
+
+  win.on('close', () => {
+    pttWin.close();
+  });
+
+  const loadNbaLivePostComments = async () => {
+    pttWin.loadURL(`${pttBaseUrl}/bbs/NBA/search?q=Live`);
+    const urls = await pttWin.webContents.executeJavaScript(`
+(() => {
+  const urlAs = document.querySelectorAll('#main-container .r-ent > .title > a');
+  const urls = [];
+  urlAs.forEach((a) => {
+    urls.push(\`${pttBaseUrl}\$\{a.attributes.href.value\}\`);
+  });
+  return urls;
+})()
+  `);
+
+    // TODO: Determine URL intelligently
+    pttWin.loadURL(urls[0]);
+
+    await pttWin.webContents.executeJavaScript(`
+(() => {
+  document.querySelector('#article-polling').click();
+})()
+  `);
+
+    while (true) {
+      if (!pttWin) {
+        return;
+      }
+      await delay(1000);
+      const comments = await pttWin.webContents.executeJavaScript(`
+(() => {
+  const commentDivs = document.querySelectorAll('#main-content .push');
+  const comments = [];
+  commentDivs.forEach((div) => {
+    const typeSpan = div.querySelector('.push-tag');
+    const userIdSpan = div.querySelector('.push-userid');
+    const contentSpan = div.querySelector('.push-content');
+    const timeSpan = div.querySelector('.push-ipdatetime');
+    if (!contentSpan) {
+      return;
     }
+    comments.push({
+      id: comments.length,
+      type: typeSpan.innerText.includes('推') ? 'UP' : typeSpan.innerText.includes('噓') ? 'DOWN' : 'CONT',
+      userId: userIdSpan.innerText.trim(),
+      content: contentSpan.innerText.slice(1).trim(),
+      time: timeSpan.innerText.trim(),
+    });
   });
-});
+  return comments;
+})()
+  `);
+      win.webContents.send('async-msg', {
+        type: 'SET_LIVE_POST_COMMENTS',
+        payload: {
+          livePostComments: comments,
+        },
+      });
+    }
+  };
+
+  loadNbaLivePostComments();
+})();

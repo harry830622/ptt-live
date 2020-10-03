@@ -1,4 +1,6 @@
 .env*
+.yarn
+release
 
 # Logs
 logs

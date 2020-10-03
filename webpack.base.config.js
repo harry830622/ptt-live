@@ -83,6 +83,10 @@ module.exports = {
       template: path.resolve(__dirname, 'src/index.ejs'),
       chunks: ['index'],
     }),
-    new EnvironmentPlugin(['GA_TRACKING_ID']),
+    new CopyPlugin({
+      patterns: ['assets'],
+    }),
+    new EnvironmentPlugin(['NODE_ENV']),
   ],
+  target: 'electron-renderer',
 };
