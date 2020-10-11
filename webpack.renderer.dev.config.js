@@ -1,7 +1,7 @@
 const { merge } = require('webpack-merge');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
-const base = require('./webpack.base.config');
+const base = require('./webpack.renderer.base.config');
 
 const { PORT = '8080' } = process.env;
 

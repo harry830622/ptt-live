@@ -1,12 +1,12 @@
 const path = require('path');
 const { merge } = require('webpack-merge');
 
-const base = require('./webpack.base.config');
+const base = require('./webpack.main.base.config');
 
 module.exports = merge(base, {
   mode: 'production',
   output: {
-    filename: '[name].[contenthash].js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+    path: path.resolve(__dirname, './build/main'),
   },
 });

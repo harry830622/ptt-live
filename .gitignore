@@ -1,5 +1,6 @@
 .env*
 .yarn
+build
 release
 
 # Logs

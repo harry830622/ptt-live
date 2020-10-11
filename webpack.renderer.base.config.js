@@ -11,14 +11,14 @@ require('dotenv').config({
 });
 
 module.exports = {
+  target: 'electron-renderer',
   entry: {
-    index: path.resolve(__dirname, 'src/index.jsx'),
+    index: path.resolve(__dirname, 'src/renderer/index.jsx'),
   },
   resolve: {
     extensions: ['.js', '.jsx', '.json'],
     alias: {
       assets: path.resolve(__dirname, 'assets'),
-      constants: path.resolve(__dirname, 'src/constants'),
     },
   },
   module: {
@@ -80,7 +80,7 @@ module.exports = {
   plugins: [
     new HtmlPlugin({
       filename: 'index.html',
-      template: path.resolve(__dirname, 'src/index.ejs'),
+      template: path.resolve(__dirname, 'src/renderer/index.ejs'),
       chunks: ['index'],
     }),
     new CopyPlugin({
@@ -88,5 +88,4 @@ module.exports = {
     }),
     new EnvironmentPlugin(['NODE_ENV']),
   ],
-  target: 'electron-renderer',
 };

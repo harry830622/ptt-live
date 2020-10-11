@@ -14,14 +14,6 @@ module.exports = {
     jest: true,
     node: true,
   },
-  settings: {
-    'import/resolver': {
-      node: {},
-      webpack: {
-        config: 'webpack.dev.config.js',
-      },
-    },
-  },
   rules: {
     'import/no-extraneous-dependencies': [
       'error',
