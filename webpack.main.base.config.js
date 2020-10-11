@@ -16,9 +16,6 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.json'],
   },
-  externals: {
-    puppeteer: 'commonjs2 puppeteer',
-  },
   module: {
     rules: [
       {
@@ -32,5 +29,15 @@ module.exports = {
       },
     ],
   },
-  plugins: [new EnvironmentPlugin(['NODE_ENV', 'URL'])],
+  plugins: [new EnvironmentPlugin(['NODE_ENV'])],
+
+  externals: {
+    puppeteer: 'commonjs2 puppeteer',
+  },
+
+  // Prevent __dirname and __filename from being substituted by webpack
+  node: {
+    __dirname: false,
+    __filename: false,
+  },
 };

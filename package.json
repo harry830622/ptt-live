@@ -1,6 +1,6 @@
 {
   "name": "ptt-nba-live",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "An live chat overlay for PTT NBA Live post",
   "main": "build/main/index.js",
   "scripts": {

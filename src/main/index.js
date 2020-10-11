@@ -1,5 +1,6 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
+import path from 'path';
 import crypto from 'crypto';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import Store from 'electron-store';
@@ -36,7 +37,11 @@ import puppeteer from 'puppeteer';
       },
     });
 
-    win.loadURL(process.env.URL);
+    win.loadURL(
+      process.env.NODE_ENV === 'development'
+        ? 'http://localhost:8080'
+        : `file://${path.resolve(__dirname, '../renderer/index.html')}`,
+    );
 
     win.setAutoHideMenuBar(true);
     win.setAlwaysOnTop(true);
@@ -226,17 +231,17 @@ import puppeteer from 'puppeteer';
     };
     const parseComments = async (lineTexts) => {
       const comments = lineTexts.reduce((prev, lineText) => {
-        const match = lineText.match(
+        match = lineText.match(
           /([推|噓|→]) (\w+)\s*: (.+)(\d{2})\/(\d{2}) (\d{2}):(\d{2})/,
         );
         if (!match) {
           return prev;
         }
         const time = new Date();
-        time.setMonth(parseInt(match[4]));
-        time.setDate(parseInt(match[5]));
-        time.setHours(parseInt(match[6]));
-        time.setMinutes(parseInt(match[7]));
+        time.setMonth(parseInt(match[4], 10));
+        time.setDate(parseInt(match[5], 10));
+        time.setHours(parseInt(match[6], 10));
+        time.setMinutes(parseInt(match[7], 10));
         time.setSeconds(0);
         time.setMilliseconds(0);
         const comment = {
